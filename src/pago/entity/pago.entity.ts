@@ -35,7 +35,7 @@ export class Pago {
     @Column()
     referencia_pago: string
 
-    @Column({type: 'date'})
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     fecha_pago: Date
     
 }

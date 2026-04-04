@@ -9,7 +9,7 @@ export enum tiposDeporte{
     VOLEY = 'voley'
 }
 
-@Entity('tipo-deporte')
+@Entity('tipo_deporte')
 export class TipoDeporte {
     @PrimaryGeneratedColumn('increment')
     id: number

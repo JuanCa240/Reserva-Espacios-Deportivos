@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { Usuario } from './usuario/entity/usuario.entity';
 import { Ubicacion } from './ubicacion/entity/ubicacion.entity';
 import { Escenario } from './escenario/entity/escenario.entity';
-import { TipoDeporte } from './tipo-deporte/entity/tipo-deporte.entity';
+import { TipoDeporte } from './tipo-deporte/entity/tipo_deporte.entity';
 import { Horario } from './horario/entity/horario.entity';
 import { Reserva } from './reserva/entity/reserva.entity';
 import { Pago } from './pago/entity/pago.entity';

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TipoDeporte } from './entity/tipo-deporte.entity';
+import { TipoDeporte } from './entity/tipo_deporte.entity';
 import { TipoDeporteController } from './tipo-deporte.controller';
 import { TipoDeporteService } from './tipo-deporte.service';
 

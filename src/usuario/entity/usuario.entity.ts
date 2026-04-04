@@ -33,7 +33,7 @@ export class Usuario {
   @Column({type: 'boolean', default: false})
   dosfa_habilitado: boolean
 
-  @Column({nullable: true})
+  @Column({ type: 'text', nullable: true })
   dosfa_secret: string
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
