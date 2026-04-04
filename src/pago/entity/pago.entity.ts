@@ -9,7 +9,7 @@ export enum metodoPago{
     DAVIPLATA = 'daviplata',
 }
 
-export enum estado{
+export enum estadoPago{
     PENDIENTE = 'pendiente',
     APROBADO = 'aprobado',
     RECHAZADO = 'rechazado'
@@ -29,8 +29,8 @@ export class Pago {
     @Column({type: 'enum', enum: metodoPago})
     metodo_pago: metodoPago
 
-    @Column({type: 'enum', enum: estado, default: estado.PENDIENTE})
-    estado: estado
+    @Column({type: 'enum', enum: estadoPago, default: estadoPago.PENDIENTE})
+    estado: estadoPago
 
     @Column()
     referencia_pago: string

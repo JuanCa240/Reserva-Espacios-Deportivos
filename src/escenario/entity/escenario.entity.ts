@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 // El lugar físico donde se reserva.
 
-export enum estado{
+export enum estadoEscenario{
     ACTIVO = 'activo',
     INACTIVO = 'inactivo',
 
@@ -28,7 +28,7 @@ export class Escenario {
     @Column()
     descripcion: string
 
-    @Column({type: 'enum', enum: estado, default: estado.INACTIVO})
-    estado: estado
+    @Column({type: 'enum', enum: estadoEscenario, default: estadoEscenario.INACTIVO})
+    estado: estadoEscenario
 
 }

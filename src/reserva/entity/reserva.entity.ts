@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 
-export enum estado{
+export enum estadoReserva{
     PENDIENTE = 'pendiente',
     CONFIRMADO = 'confirmado',
     CANCELADA = 'cancelada',
@@ -30,8 +30,8 @@ export class Reserva {
     @Column()
     cantidad_personas: number
 
-    @Column({type: 'enum', enum: estado, default: estado.PENDIENTE})
-    estado: estado
+    @Column({type: 'enum', enum: estadoReserva, default: estadoReserva.PENDIENTE})
+    estado: estadoReserva
 
     @Column()
     precio_total: number
