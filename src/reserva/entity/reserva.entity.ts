@@ -30,6 +30,9 @@ export class Reserva {
     @Column()
     cantidad_personas: number
 
+    @Column({type: 'enum', enum: estado, default: estado.PENDIENTE})
+    estado: estado
+
     @Column()
     precio_total: number
 
