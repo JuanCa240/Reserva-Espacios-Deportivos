@@ -12,4 +12,31 @@ export class Usuario {
   @PrimaryGeneratedColumn('increment')
   id: number
 
+  @Column()
+  nombre: string
+
+  @Column()
+  email: string
+
+  @Column()
+  contrasena: string
+
+  @Column({type: 'enum', enum: rol, default: rol.USER})
+  rol: rol
+
+  @Column()
+  telefono: string
+
+  @Column({type: 'boolean', default: true})
+  activo: boolean
+
+  @Column({type: 'boolean', default: false})
+  dosfa_habilitado: boolean
+
+  @Column({nullable: true})
+  dosfa_secret: string
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  fecha_creacion: Date
+
 }
