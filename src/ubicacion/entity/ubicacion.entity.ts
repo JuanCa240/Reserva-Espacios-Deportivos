@@ -7,4 +7,13 @@ export class Ubicacion {
     @PrimaryGeneratedColumn('increment')
     id: number
 
+    @Column()
+    nombre: string
+
+    @Column()
+    direccion: string
+
+    @Column()
+    ciudad: string
+
 }
