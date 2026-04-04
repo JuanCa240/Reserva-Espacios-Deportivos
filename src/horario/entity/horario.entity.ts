@@ -13,10 +13,10 @@ export class Horario {
     @Column()
     diaSemana: string
 
-    @Column()
+    @Column({type: 'time'})
     hora_inicio: string
 
-    @Column()
+    @Column({type: 'time'})
     hora_fin: string
  
 }

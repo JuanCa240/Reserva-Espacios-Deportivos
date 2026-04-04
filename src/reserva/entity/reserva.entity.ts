@@ -21,10 +21,10 @@ export class Reserva {
     @Column({type: 'date'})
     fecha: Date         // TypeORM usa Date para mapear el tipo DATE de la base de datos.
 
-    @Column()
+    @Column({type: 'time'})
     hora_inicio: string
 
-    @Column()
+    @Column({type: 'time'})
     hora_fin: string
 
     @Column()
@@ -36,7 +36,7 @@ export class Reserva {
     @Column()
     precio_total: number
 
-    @Column({type: 'date'})
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     fecha_creacion: Date
     
 }
