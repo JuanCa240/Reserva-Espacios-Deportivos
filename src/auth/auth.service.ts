@@ -3,6 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Usuario } from 'src/usuario/entity/usuario.entity';
 import { Repository } from 'typeorm';
+import { BadRequestException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 
 @Injectable()
@@ -29,7 +31,9 @@ export class AuthService {
             }
 
             // 4.) Validar la contraseña
-            if (user.contrasena !== contrasena) {
+            const passwordValida = await bcrypt.compare(contrasena, user.contrasena);
+
+            if (!passwordValida) {
                 throw new UnauthorizedException('Contraseña incorrecta');
             }
 
@@ -45,5 +49,48 @@ export class AuthService {
             return {
                 access_token: token,
             };
+    }
+
+    async register(data: any) {
+        const { nombre, email, contrasena, telefono } = data;
+
+        // 1️) Validar campos basicos
+        if (!nombre || !email || !contrasena) {
+            throw new BadRequestException('Faltan campos obligatorios');
+        }
+
+        // 2.) Verificar si el usuario ya existe
+        const existe = await this.usuarioRepository.findOne({
+            where: { email },
+        });
+
+        if (existe) {
+            throw new BadRequestException('El usuario ya existe');
+        }
+
+        const hashedPassword = await bcrypt.hash(contrasena, 10);
+
+        // 3️.) Crear usuario
+        const nuevoUsuario = this.usuarioRepository.create({
+            nombre,
+            email,
+            contrasena: hashedPassword, // metemos bcrypt 
+            telefono,
+        });
+
+        await this.usuarioRepository.save(nuevoUsuario);
+
+        // 4.) Se crea el token automáticamente
+        const payload = {
+            sub: nuevoUsuario.id,
+            email: nuevoUsuario.email,
+        };
+
+        const token = this.jwtService.sign(payload);
+
+        return {
+            message: 'Usuario creado correctamente',
+            access_token: token,
+        };
     }
 }
