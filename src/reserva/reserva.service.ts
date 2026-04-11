@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Reserva } from './entity/reserva.entity';
 import { Repository } from 'typeorm';
 import { Escenario } from 'src/escenario/entity/escenario.entity';
+import { Horario } from 'src/horario/entity/horario.entity';
+
 
 @Injectable()
 export class ReservaService {
@@ -12,6 +14,9 @@ export class ReservaService {
 
     @InjectRepository(Escenario)
     private readonly escenarioRepository: Repository<Escenario>,
+
+    @InjectRepository(Horario)
+    private readonly horarioRepository: Repository<Horario>,
   ) {}
 
   async crearReserva(data: any) {
@@ -34,12 +39,35 @@ export class ReservaService {
       throw new BadRequestException('Escenario no existe');
     }
 
-    // 2.) Validamos capacidad
+    // 2.) Validar la capacidad
     if (cantidad_personas > escenario.capacidad_maxima) {
       throw new BadRequestException('Capacidad excedida');
     }
 
-    // 3. Validamos traslape (parte importante)
+    // Validación del horario
+
+    const fechaObj = new Date(fecha);
+    const dias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+    const diaSemana = dias[fechaObj.getDay()];
+
+    // Buscar horario del escenario
+    const horario = await this.horarioRepository.findOne({
+      where: {
+        escenario_id,
+        diaSemana,
+      },
+    });
+
+    if (!horario) {
+      throw new BadRequestException('No hay horario disponible para este día');
+    }
+
+    // Validar que la hora esté dentro del rango permitido
+    if (hora_inicio < horario.hora_inicio || hora_fin > horario.hora_fin) {
+      throw new BadRequestException('Horario fuera del rango permitido');
+    }
+
+    // 3. Validar traslape (parte importante)
     const conflicto = await this.reservaRepository
       .createQueryBuilder('reserva')
       .where('reserva.escenario_id = :escenario_id', { escenario_id })
