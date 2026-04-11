@@ -30,7 +30,12 @@ export class ReservaService {
       precio_total,
     } = data;
 
-    // 1.) Validamos escenario existe
+    // 1.) Validamos las horas
+    if (hora_inicio >= hora_fin) {
+      throw new BadRequestException('Hora inválida');
+    }
+
+    // 2.) Validamos escenario existe
     const escenario = await this.escenarioRepository.findOne({
       where: { id: escenario_id },
     });
@@ -39,7 +44,7 @@ export class ReservaService {
       throw new BadRequestException('Escenario no existe');
     }
 
-    // 2.) Validar la capacidad
+    // 3.) Validar la capacidad
     if (cantidad_personas > escenario.capacidad_maxima) {
       throw new BadRequestException('Capacidad excedida');
     }
@@ -62,23 +67,23 @@ export class ReservaService {
       throw new BadRequestException('No hay horario disponible para este día');
     }
 
-    // Validar que la hora esté dentro del rango permitido
+    // 4.) Validar que la hora esté dentro del rango permitido
     if (hora_inicio < horario.hora_inicio || hora_fin > horario.hora_fin) {
       throw new BadRequestException('Horario fuera del rango permitido');
     }
 
-    // 3. Validar traslape (parte importante)
+    // 5.) Validar traslape (parte importante)
     const conflicto = await this.reservaRepository
-      .createQueryBuilder('reserva')
-      .where('reserva.escenario_id = :escenario_id', { escenario_id })
-      .andWhere('reserva.fecha = :fecha', { fecha })
-      .andWhere(`
-        (reserva.hora_inicio < :hora_fin AND reserva.hora_fin > :hora_inicio)
-      `, {
-        hora_inicio,
-        hora_fin,
-      })
-      .getOne();
+    .createQueryBuilder('reserva')
+    .where('reserva.escenario_id = :escenario_id', { escenario_id })
+    .andWhere('reserva.fecha = :fecha', { fecha })
+    .andWhere(`NOT ( reserva.hora_fin <= :hora_inicio OR reserva.hora_inicio >= :hora_fin
+      )
+    `, {
+      hora_inicio,
+      hora_fin,
+    })
+    .getOne();
 
     if (conflicto) {
       throw new BadRequestException('Ya existe una reserva en ese horario');
