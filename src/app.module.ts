@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer,Module,NestModule  } from '@nestjs/common';
 import { Usuario } from './usuario/entity/usuario.entity';
 import { Ubicacion } from './ubicacion/entity/ubicacion.entity';
 import { Escenario } from './escenario/entity/escenario.entity';
@@ -17,6 +17,8 @@ import { ReservaModule } from './reserva/reserva.module';
 import { TipoDeporteModule } from './tipo-deporte/tipo-deporte.module';
 import { UbicacionModule } from './ubicacion/ubicacion.module';
 import { UsuarioModule } from './usuario/usuario.module';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
+
 
 @Module({
   imports: [
@@ -51,4 +53,8 @@ import { UsuarioModule } from './usuario/usuario.module';
   providers: [],
 })
 
-export class AppModule {}
+export class AppModule implements NestModule{
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
