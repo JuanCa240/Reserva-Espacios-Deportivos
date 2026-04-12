@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Delete, Param, UseGuards } from '@nestjs/common';
 import { ReservaService } from './reserva.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
 
@@ -10,6 +10,12 @@ export class ReservaController {
   @Post()
   crearReserva(@Body() body: any) {
     return this.reservaService.crearReserva(body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  deleteReserva(@Param('id') id: string) {
+    return this.reservaService.eliminarReserva(Number(id));
   }
 
   @UseGuards(JwtAuthGuard)

@@ -106,4 +106,20 @@ export class ReservaService {
   async findAll() {
     return this.reservaRepository.find();
   }
+
+  async eliminarReserva(id: number) {
+    const reserva = await this.reservaRepository.findOne({
+      where: { id },
+    });
+
+    if (!reserva) {
+      throw new BadRequestException('Reserva no existe');
+    }
+
+    await this.reservaRepository.delete(id);
+
+    return {
+      message: 'Reserva eliminada correctamente',
+    };
+  }
 }
