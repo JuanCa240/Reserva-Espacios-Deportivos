@@ -6,91 +6,61 @@ import { Repository } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
-
 @Injectable()
 export class AuthService {
-    constructor(
-        @InjectRepository(Usuario) 
-        private readonly usuarioRepository: Repository<Usuario>,
-        private readonly jwtService: JwtService,
-    ){}
+  constructor(
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>,
+    private readonly jwtService: JwtService,
+  ) {}
 
-    async login(usuario: Usuario){
+  async login(usuario: Usuario) {
+    const { email, contrasena } = usuario;
 
-            // 1.) Extraer los datos del usuario para el 'login'
-            const {email,contrasena} = usuario;
+    const user = await this.usuarioRepository.findOne({ where: { email } });
+    if (!user) throw new UnauthorizedException('Usuario no encontrado');
 
-            // 2.) Buscar el usuario en la base de datos
-            const user = await this.usuarioRepository.findOne({
-                where: {email},
-            });
+    const passwordValida = await bcrypt.compare(contrasena, user.contrasena);
+    if (!passwordValida) throw new UnauthorizedException('Contraseña incorrecta');
 
-            // 3.) Validar si el usuario existe
-            if(!user){
-                throw new UnauthorizedException('Usuario no encontrado')
-            }
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      rol: user.rol, // ← agregamos el rol
+    };
 
-            // 4.) Validar la contraseña
-            const passwordValida = await bcrypt.compare(contrasena, user.contrasena);
+    return { access_token: this.jwtService.sign(payload) };
+  }
 
-            if (!passwordValida) {
-                throw new UnauthorizedException('Contraseña incorrecta');
-            }
+  async register(data: any) {
+    const { nombre, email, contrasena, telefono } = data;
 
-            // 5.). Crear payload
-            const payload = {
-                sub: user.id,
-                email: user.email,
-            };
+    if (!nombre || !email || !contrasena)
+      throw new BadRequestException('Faltan campos obligatorios');
 
-            // 6.) Generar token
-            const token = this.jwtService.sign(payload)
+    const existe = await this.usuarioRepository.findOne({ where: { email } });
+    if (existe) throw new BadRequestException('El usuario ya existe');
 
-            return {
-                access_token: token,
-            };
-    }
+    const hashedPassword = await bcrypt.hash(contrasena, 10);
 
-    async register(data: any) {
-        const { nombre, email, contrasena, telefono } = data;
+    const nuevoUsuario = this.usuarioRepository.create({
+      nombre,
+      email,
+      contrasena: hashedPassword,
+      telefono,
+    });
 
-        // 1️) Validar campos basicos
-        if (!nombre || !email || !contrasena) {
-            throw new BadRequestException('Faltan campos obligatorios');
-        }
+    await this.usuarioRepository.save(nuevoUsuario);
 
-        // 2.) Verificar si el usuario ya existe
-        const existe = await this.usuarioRepository.findOne({
-            where: { email },
-        });
+    const payload = {
+      sub: nuevoUsuario.id,
+      email: nuevoUsuario.email,
+      rol: nuevoUsuario.rol, // ← agregamos el rol
+    };
 
-        if (existe) {
-            throw new BadRequestException('El usuario ya existe');
-        }
-
-        const hashedPassword = await bcrypt.hash(contrasena, 10);
-
-        // 3️.) Crear usuario
-        const nuevoUsuario = this.usuarioRepository.create({
-            nombre,
-            email,
-            contrasena: hashedPassword, // metemos bcrypt 
-            telefono,
-        });
-
-        await this.usuarioRepository.save(nuevoUsuario);
-
-        // 4.) Se crea el token automáticamente
-        const payload = {
-            sub: nuevoUsuario.id,
-            email: nuevoUsuario.email,
-        };
-
-        const token = this.jwtService.sign(payload);
-
-        return {
-            message: 'Usuario creado correctamente',
-            access_token: token,
-        };
-    }
+    return {
+      message: 'Usuario creado correctamente',
+      access_token: this.jwtService.sign(payload),
+    };
+  }
 }
