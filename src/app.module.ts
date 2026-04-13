@@ -7,7 +7,6 @@ import { Horario } from './horario/entity/horario.entity';
 import { Reserva } from './reserva/entity/reserva.entity';
 import { Pago } from './pago/entity/pago.entity';
 import { ConfigModule } from '@nestjs/config';
-
 import { TypeOrmModule } from '@nestjs/typeorm' 
 import { AuthModule } from './auth/auth.module';
 import { EscenarioModule } from './escenario/escenario.module';

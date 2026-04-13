@@ -1,34 +1,33 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-// El lugar físico donde se reserva.
-
-export enum estadoEscenario{
-    ACTIVO = 'activo',
-    INACTIVO = 'inactivo',
-
+export enum estadoEscenario {
+  ACTIVO = 'activo',
+  INACTIVO = 'inactivo',
 }
 
 @Entity('escenario')
 export class Escenario {
-    @PrimaryGeneratedColumn('increment')
-    id: number
+  @PrimaryGeneratedColumn('increment')
+  id: number
 
-    @Column()
-    nombre: string
+  @Column()
+  nombre: string
 
-    @Column()
-    tipo_deporte_id: number // Llave foránea
+  @Column()
+  tipo_deporte_id: number
 
-    @Column()
-    ubicacion_id: number // Llave foránea
+  @Column()
+  ubicacion_id: number
 
-    @Column()
-    capacidad_maxima: number
+  @Column()
+  capacidad_maxima: number
 
-    @Column()
-    descripcion: string
+  @Column()
+  descripcion: string
 
-    @Column({type: 'enum', enum: estadoEscenario, default: estadoEscenario.INACTIVO})
-    estado: estadoEscenario
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  precio_por_hora: number  // ← este campo debe estar
 
+  @Column({ type: 'enum', enum: estadoEscenario, default: estadoEscenario.INACTIVO })
+  estado: estadoEscenario
 }
