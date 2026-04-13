@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Horario } from './entity/horario.entity';
 import { Repository } from 'typeorm';
@@ -11,19 +11,12 @@ export class HorarioService {
   ) {}
 
   async crear(data: any) {
-    const { 
-        escenario_id, 
-        diaSemana, 
-        hora_inicio, 
-        hora_fin 
-    } = data;
+    const { escenario_id, diaSemana, hora_inicio, hora_fin } = data;
 
-    // Validar camos vacios
     if (!escenario_id || !diaSemana || !hora_inicio || !hora_fin) {
       throw new BadRequestException('Faltan datos del horario');
     }
 
-    // validar la hora de inicio
     if (hora_inicio >= hora_fin) {
       throw new BadRequestException('La hora de inicio debe ser menor a la hora fin');
     }
@@ -40,5 +33,11 @@ export class HorarioService {
 
   async findAll() {
     return this.horarioRepository.find();
+  }
+
+  async remove(id: number) {
+    const horario = await this.horarioRepository.findOneBy({ id });
+    if (!horario) throw new NotFoundException(`Horario #${id} no encontrado`);
+    return this.horarioRepository.remove(horario);
   }
 }
