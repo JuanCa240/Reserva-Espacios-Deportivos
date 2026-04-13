@@ -1,42 +1,33 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-
-export enum estadoReserva{
-    PENDIENTE = 'pendiente',
-    CONFIRMADO = 'confirmado',
-    CANCELADA = 'cancelada',
+export enum estadoEscenario {
+  ACTIVO = 'activo',
+  INACTIVO = 'inactivo',
 }
 
-@Entity('reserva')
-export class Reserva {
-    @PrimaryGeneratedColumn('increment')
-    id: number
+@Entity('escenario')
+export class Escenario {
+  @PrimaryGeneratedColumn('increment')
+  id: number
 
-    @Column()
-    usuario_id: number // Llave foránea
+  @Column()
+  nombre: string
 
-    @Column()
-    escenario_id: number // Llave foránea
+  @Column()
+  tipo_deporte_id: number
 
-    @Column({type: 'date'})
-    fecha: Date         // TypeORM usa Date para mapear el tipo DATE de la base de datos.
+  @Column()
+  ubicacion_id: number
 
-    @Column({type: 'time'})
-    hora_inicio: string
+  @Column()
+  capacidad_maxima: number
 
-    @Column({type: 'time'})
-    hora_fin: string
+  @Column()
+  descripcion: string
 
-    @Column()
-    cantidad_personas: number
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  precio_por_hora: number  // ← nuevo campo
 
-    @Column({type: 'enum', enum: estadoReserva, default: estadoReserva.PENDIENTE})
-    estado: estadoReserva
-
-    @Column()
-    precio_total: number
-
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    fecha_creacion: Date
-    
+  @Column({ type: 'enum', enum: estadoEscenario, default: estadoEscenario.INACTIVO })
+  estado: estadoEscenario
 }
