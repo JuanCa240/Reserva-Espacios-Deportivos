@@ -21,7 +21,7 @@ export class UbicacionService {
       ciudad 
     } = data;
 
-    // Validación
+    // Validacióon de campos
     if (!nombre || !direccion || !ciudad) {
       throw new BadRequestException('Faltan campos obligatorios');
     }

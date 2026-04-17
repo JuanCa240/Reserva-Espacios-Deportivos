@@ -15,10 +15,13 @@ export class TipoDeporteService {
   }
 
   async create(data: any) {
-    const { tipoDeporte, descripcion } = data;
+    const { 
+      tipoDeporte, 
+      descripcion
+    } = data;
 
-    // Validaciones
-    if (!tipoDeporte || !descripcion) {
+    // Validacion de campo vacio
+    if (!tipoDeporte) {
       throw new BadRequestException('Faltan campos obligatorios');
     }
 

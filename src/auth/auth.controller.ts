@@ -16,13 +16,6 @@ export class AuthController {
     return this.authService.register(body);
   }
 
-  // Habilitar 2FA (requiere estar logueado)
-  @UseGuards(JwtAuthGuard)
-  @Post('2fa/habilitar')
-  habilitarDosfa(@Request() req: any, @Body() body: { pin: string }) {
-    return this.authService.habilitarDosfa(req.user.userId, body.pin);
-  }
-
   // Verificar PIN y obtener token
   @Post('2fa/verificar')
   verificarDosfa(@Body() body: { email: string; pin: string }) {

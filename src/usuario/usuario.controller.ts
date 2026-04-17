@@ -10,11 +10,13 @@ import { rol } from './entity/usuario.entity';
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
 
+  @Roles(rol.ADMIN)
   @Get()
   getUsuarios() {
     return this.usuarioService.findAll();
   }
 
+  @Roles(rol.ADMIN)
   @Get(':id')
   getUsuario(@Param('id') id: string) {
     return this.usuarioService.findOne(Number(id));

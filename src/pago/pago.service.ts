@@ -32,6 +32,7 @@ export class PagoService {
     }
 
     // 2️.) Verificar que no tenga pago ya
+    // Evita pagos duplicados para la misma reserva
     const pagoExistente = await this.pagoRepository.findOne({
       where: { reserva_id },
     });
@@ -40,12 +41,27 @@ export class PagoService {
       throw new BadRequestException('La reserva ya tiene un pago');
     }
 
-    // 3️.) Validar monto
+     // 3.) Validar que el monto sea un valor numérico válido
+    if (!monto || isNaN(Number(monto))) {
+      throw new BadRequestException('Monto inválido');
+    }
+
+    // 4.) Valida que el monto sea mayor a 0
+    if (Number(monto) <= 0) {
+      throw new BadRequestException('El monto debe ser mayor a 0');
+    }
+
+    // 5.) Validar el método de pago (nequi,tarjeta,efectivo,etc)
+    if (!metodo_pago) {
+      throw new BadRequestException('Método de pago requerido');
+    }
+
+    // 6.) Validar el monto exacto
     if (Number(monto) !== Number(reserva.precio_total)) {
       throw new BadRequestException('Monto incorrecto');
     }
 
-    // 4️.) Crear pago
+    //  Crear pago
     const nuevoPago = this.pagoRepository.create({
       reserva_id,
       monto,
@@ -56,7 +72,7 @@ export class PagoService {
 
     await this.pagoRepository.save(nuevoPago);
 
-    // 5.)  Cambiar el estado de reserva
+    // Cambiar el estado de reserva
     reserva.estado = estadoReserva.CONFIRMADO;
     await this.reservaRepository.save(reserva);
 

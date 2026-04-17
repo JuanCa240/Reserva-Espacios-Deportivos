@@ -39,13 +39,18 @@ export class ReservaService {
     });
     if (!escenario) throw new BadRequestException('Escenario no existe');
 
-    // 3. Validar capacidad
+    // 3. Validar cantidad de personas
+    if (!cantidad_personas || cantidad_personas <= 0) {
+      throw new BadRequestException('La cantidad de personas debe ser mayor a 0');
+    }
+
+    // 4. Validar capacidad
     if (cantidad_personas > escenario.capacidad_maxima) {
       throw new BadRequestException('Capacidad excedida');
     }
 
-    // 4. Validar horario permitido
-    const fechaObj = new Date(fecha);
+    // 5. Validar horario permitido
+    const fechaObj = new Date(fecha + 'T00:00:00');
     const dias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
     const diaSemana = dias[fechaObj.getDay()];
 
@@ -58,7 +63,7 @@ export class ReservaService {
       throw new BadRequestException('Horario fuera del rango permitido');
     }
 
-    // 5. Validar traslape
+    // 6. Validar traslape
     const conflicto = await this.reservaRepository
       .createQueryBuilder('reserva')
       .where('reserva.escenario_id = :escenario_id', { escenario_id })
@@ -70,18 +75,23 @@ export class ReservaService {
       .getOne();
     if (conflicto) throw new BadRequestException('Ya existe una reserva en ese horario');
 
-    // 6. Contar reservas activas del escenario en esa fecha
+    // 7. Contar reservas activas del escenario en esa fecha
     const totalReservas = await this.reservaRepository.count({
       where: { escenario_id, fecha },
     });
 
-    // 7. Calcular precio_total automáticamente
-    const [hIni, mIni] = hora_inicio.split(':').map(Number);
-    const [hFin, mFin] = hora_fin.split(':').map(Number);
-    const horas = (hFin * 60 + mFin - (hIni * 60 + mIni)) / 60;
+    // 8. Calcular precio_total automáticamente
+    const inicio = hora_inicio.split(':');
+    const fin = hora_fin.split(':');
+
+    const inicioMin = Number(inicio[0]) * 60 + Number(inicio[1]);
+    const finMin = Number(fin[0]) * 60 + Number(fin[1]);
+
+    const horas = (finMin - inicioMin) / 60;
+
     const precio_total = Number(escenario.precio_por_hora) * horas;
 
-    // 8. Crear reserva
+    // 9. Crear reserva
     const nuevaReserva = this.reservaRepository.create({
       usuario_id,
       escenario_id,
@@ -110,5 +120,5 @@ export class ReservaService {
     if (!reserva) throw new BadRequestException('Reserva no existe');
     await this.reservaRepository.delete(id);
     return { message: 'Reserva eliminada correctamente' };
-  }
+  } 
 }

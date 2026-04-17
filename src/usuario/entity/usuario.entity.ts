@@ -39,4 +39,7 @@ export class Usuario {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   fecha_creacion: Date
 
+  @Column({ type: 'timestamp', nullable: true })
+  dosfa_expira: Date;
+
 }

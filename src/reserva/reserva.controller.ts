@@ -1,8 +1,11 @@
 import { Body, Controller, Get, Post, Delete, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ReservaService } from './reserva.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { rol } from 'src/usuario/entity/usuario.entity';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('reserva')
 export class ReservaController {
   constructor(private readonly reservaService: ReservaService) {}
@@ -12,6 +15,7 @@ export class ReservaController {
     return this.reservaService.crearReserva(body);
   }
 
+  @Roles(rol.ADMIN)
   @Get()
   getReservas() {
     return this.reservaService.findAll();
@@ -22,8 +26,9 @@ export class ReservaController {
     return this.reservaService.findOne(id);
   }
 
+  @Roles(rol.ADMIN)
   @Delete(':id')
-  deleteReserva(@Param('id', ParseIntPipe) id: number) {
-    return this.reservaService.eliminarReserva(id);
+  deleteReserva(@Param('id') id: string) {
+    return this.reservaService.eliminarReserva(Number(id));
   }
 }

@@ -13,8 +13,15 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(usuario: Usuario) {
-    const { email, contrasena } = usuario;
+  async login(usuario: any) {
+    const { 
+      email, 
+      contrasena 
+    } = usuario;
+
+    if (!email || !contrasena) {
+      throw new BadRequestException('Email y contraseña son requeridos');
+    }
 
     const user = await this.usuarioRepository.findOne({ where: { email } });
     if (!user) throw new UnauthorizedException('Usuario no encontrado');
@@ -22,22 +29,44 @@ export class AuthService {
     const passwordValida = await bcrypt.compare(contrasena, user.contrasena);
     if (!passwordValida) throw new UnauthorizedException('Contraseña incorrecta');
 
-    // Si tiene 2FA habilitado, no devolvemos token todavía
     if (user.dosfa_habilitado) {
-      return {
-        message: 'Se requiere verificación 2FA. Ingresa tu PIN en /auth/2fa/verificar',
-        dosfa_requerido: true,
-        email: user.email,
-      };
-    }
+    // generar PIN aleatorio
+    const pin = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // hashear PIN
+    const hash = await bcrypt.hash(pin, 10);
+
+    user.dosfa_secret = hash;
+
+    await this.usuarioRepository.save(user);
+
+    // Simulacion de envio por la terminal
+    console.log('PIN 2FA para', user.email, ':', pin);
+
+    return {
+      message: 'Código 2FA enviado (revisar consola)',
+      dosfa_requerido: true,
+      email: user.email,
+    };
+  }
 
     const payload = { sub: user.id, email: user.email, rol: user.rol };
     return { access_token: this.jwtService.sign(payload) };
   }
 
   async register(data: any) {
-    const { nombre, email, contrasena, telefono } = data;
+    const { 
+      nombre,
+      email, 
+      contrasena, 
+      telefono
+     } = data;
 
+     if (data.rol) {
+      throw new BadRequestException('No puedes asignar roles');
+    }
+
+      // Validar campos
     if (!nombre || !email || !contrasena)
       throw new BadRequestException('Faltan campos obligatorios');
 
@@ -55,41 +84,49 @@ export class AuthService {
 
     await this.usuarioRepository.save(nuevoUsuario);
 
-    const payload = { sub: nuevoUsuario.id, email: nuevoUsuario.email, rol: nuevoUsuario.rol };
+    const payload = { 
+      sub: nuevoUsuario.id, 
+      email: nuevoUsuario.email, 
+      rol: nuevoUsuario.rol
+     };
     return {
       message: 'Usuario creado correctamente',
       access_token: this.jwtService.sign(payload),
     };
   }
+  
 
   // Habilitar 2FA y guardar PIN para un usuario
-  async habilitarDosfa(userId: number, pin: string) {
-    if (!pin || pin.length < 4)
-      throw new BadRequestException('El PIN debe tener al menos 4 caracteres');
+  async habilitarDosfa(userId: number) {
+       const user = await this.usuarioRepository.findOneBy({ id: userId });
+        if (!user) throw new UnauthorizedException('Usuario no encontrado');
 
-    const user = await this.usuarioRepository.findOneBy({ id: userId });
-    if (!user) throw new UnauthorizedException('Usuario no encontrado');
+        user.dosfa_habilitado = true;
+        await this.usuarioRepository.save(user);
 
-    user.dosfa_habilitado = true;
-    user.dosfa_secret = pin; // guardamos el PIN en dosfa_secret
-    await this.usuarioRepository.save(user);
+        return { message: '2FA habilitado correctamente' };
+    }
 
-    return { message: '2FA habilitado correctamente' };
-  }
-
-  // Verificar PIN 2FA y devolver token
-  async verificarDosfa(email: string, pin: string) {
-    if (!email || !pin)
+    // Verificar PIN 2FA y devolver token
+    async verificarDosfa(email: string, pin: string) {
+    if (!email || !pin) {
       throw new BadRequestException('Email y PIN son requeridos');
+    }
 
     const user = await this.usuarioRepository.findOne({ where: { email } });
     if (!user) throw new UnauthorizedException('Usuario no encontrado');
 
-    if (!user.dosfa_habilitado)
+    if (!user.dosfa_habilitado) {
       throw new BadRequestException('Este usuario no tiene 2FA habilitado');
+    }
 
-    if (user.dosfa_secret !== pin)
+    // 🔒 comparar hash
+    const valido = await bcrypt.compare(pin, user.dosfa_secret);
+    if (!valido) {
       throw new UnauthorizedException('PIN incorrecto');
+    }
+
+    await this.usuarioRepository.save(user);
 
     const payload = { sub: user.id, email: user.email, rol: user.rol };
     return { access_token: this.jwtService.sign(payload) };
