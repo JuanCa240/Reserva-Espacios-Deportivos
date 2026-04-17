@@ -41,7 +41,7 @@ export class PagoService {
     }
 
     // 3️.) Validar monto
-    if (monto !== reserva.precio_total) {
+    if (Number(monto) !== Number(reserva.precio_total)) {
       throw new BadRequestException('Monto incorrecto');
     }
 

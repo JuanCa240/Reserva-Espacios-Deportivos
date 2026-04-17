@@ -1,9 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TipoDeporte } from './entity/tipo_deporte.entity';
-import { CreateTipoDeporteDto } from './dto/create-tipo-deporte.dto';
-import { UpdateTipoDeporteDto } from './dto/update-tipo-deporte.dto';
+import { TipoDeporte, tiposDeporte } from './entity/tipo_deporte.entity';
 
 @Injectable()
 export class TipoDeporteService {
@@ -16,21 +14,43 @@ export class TipoDeporteService {
     return this.tipoDeporteRepository.find();
   }
 
-  async create(dto: CreateTipoDeporteDto) {
-    const nuevo = this.tipoDeporteRepository.create(dto);
+  async create(data: any) {
+    const { tipoDeporte, descripcion } = data;
+
+    // Validaciones
+    if (!tipoDeporte || !descripcion) {
+      throw new BadRequestException('Faltan campos obligatorios');
+    }
+
+    if (!Object.values(tiposDeporte).includes(tipoDeporte)) {
+      throw new BadRequestException('Tipo de deporte inválido');
+    }
+
+    const nuevo = this.tipoDeporteRepository.create(data);
     return this.tipoDeporteRepository.save(nuevo);
   }
 
-  async update(id: number, dto: UpdateTipoDeporteDto) {
-    const tipoDeporte = await this.tipoDeporteRepository.findOneBy({ id });
-    if (!tipoDeporte) throw new NotFoundException(`TipoDeporte #${id} no encontrado`);
-    Object.assign(tipoDeporte, dto);
-    return this.tipoDeporteRepository.save(tipoDeporte);
+  async update(id: number, data: any) {
+    const tipo = await this.tipoDeporteRepository.findOneBy({ id });
+    if (!tipo) throw new NotFoundException(`TipoDeporte #${id} no encontrado`);
+
+    if (data.tipoDeporte) {
+      if (!Object.values(tiposDeporte).includes(data.tipoDeporte)) {
+        throw new BadRequestException('Tipo de deporte inválido');
+      }
+      tipo.tipoDeporte = data.tipoDeporte;
+    }
+
+    if (data.descripcion) {
+      tipo.descripcion = data.descripcion;
+    }
+
+    return this.tipoDeporteRepository.save(tipo);
   }
 
   async remove(id: number) {
-    const tipoDeporte = await this.tipoDeporteRepository.findOneBy({ id });
-    if (!tipoDeporte) throw new NotFoundException(`TipoDeporte #${id} no encontrado`);
-    return this.tipoDeporteRepository.remove(tipoDeporte);
+    const tipo = await this.tipoDeporteRepository.findOneBy({ id });
+    if (!tipo) throw new NotFoundException(`TipoDeporte #${id} no encontrado`);
+    return this.tipoDeporteRepository.remove(tipo);
   }
 }

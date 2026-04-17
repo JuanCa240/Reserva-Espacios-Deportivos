@@ -1,30 +1,30 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
-import { EscenarioService } from './escenario.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
-import { CreateEscenarioDto } from './dto/create-escenario.dto';
 
-@UseGuards(JwtAuthGuard)
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { rol } from 'src/usuario/entity/usuario.entity';
+import { EscenarioService } from './escenario.service';
+
+@UseGuards(JwtAuthGuard,RolesGuard)
 @Controller('escenario')
 export class EscenarioController {
   constructor(private readonly escenarioService: EscenarioService) {}
 
+  @Roles(rol.ADMIN)
+  @Post()
+  crear(@Body() body: any) {
+    return this.escenarioService.crear(body);
+  }
+
+  @Roles(rol.ADMIN)
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.escenarioService.remove(Number(id));
+  }
+
   @Get()
   findAll() {
     return this.escenarioService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.escenarioService.findOne(id);
-  }
-
-  @Post()
-  crear(@Body() dto: CreateEscenarioDto) {
-    return this.escenarioService.crear(dto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.escenarioService.remove(id);
   }
 }

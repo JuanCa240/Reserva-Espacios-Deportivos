@@ -1,10 +1,11 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { TipoDeporteService } from './tipo-deporte.service';
-import { CreateTipoDeporteDto } from './dto/create-tipo-deporte.dto';
-import { UpdateTipoDeporteDto } from './dto/update-tipo-deporte.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { rol } from 'src/usuario/entity/usuario.entity';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('tipo-deporte')
 export class TipoDeporteController {
   constructor(private readonly tipoDeporteService: TipoDeporteService) {}
@@ -14,18 +15,21 @@ export class TipoDeporteController {
     return this.tipoDeporteService.findAll();
   }
 
+  @Roles(rol.ADMIN)
   @Post()
-  create(@Body() dto: CreateTipoDeporteDto) {
-    return this.tipoDeporteService.create(dto);
+  create(@Body() body: any) {
+    return this.tipoDeporteService.create(body);
   }
 
+  @Roles(rol.ADMIN)
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTipoDeporteDto) {
-    return this.tipoDeporteService.update(id, dto);
+  update(@Param('id') id: string, @Body() body: any) {
+    return this.tipoDeporteService.update(Number(id), body);
   }
 
+  @Roles(rol.ADMIN)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.tipoDeporteService.remove(id);
+  remove(@Param('id') id: string) {
+    return this.tipoDeporteService.remove(Number(id));
   }
 }

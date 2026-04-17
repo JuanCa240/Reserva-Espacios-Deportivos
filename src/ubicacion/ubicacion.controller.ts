@@ -1,9 +1,12 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { UbicacionService } from './ubicacion.service';
-import { CreateUbicacionDto } from './dto/create-ubicacion.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { rol } from 'src/usuario/entity/usuario.entity';
 
-@UseGuards(JwtAuthGuard)
+
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('ubicacion')
 export class UbicacionController {
   constructor(private readonly ubicacionService: UbicacionService) {}
@@ -13,13 +16,15 @@ export class UbicacionController {
     return this.ubicacionService.findAll();
   }
 
+  @Roles(rol.ADMIN)
   @Post()
-  create(@Body() dto: CreateUbicacionDto) {
-    return this.ubicacionService.create(dto);
+  create(@Body() body: any) {
+    return this.ubicacionService.create(body);
   }
 
+  @Roles(rol.ADMIN)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.ubicacionService.remove(id);
+  remove(@Param('id') id: string) {
+    return this.ubicacionService.remove(Number(id));
   }
 }

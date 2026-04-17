@@ -1,8 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ubicacion } from './entity/ubicacion.entity';
-import { CreateUbicacionDto } from './dto/create-ubicacion.dto';
 
 @Injectable()
 export class UbicacionService {
@@ -15,8 +14,19 @@ export class UbicacionService {
     return this.ubicacionRepository.find();
   }
 
-  async create(dto: CreateUbicacionDto) {
-    const nueva = this.ubicacionRepository.create(dto);
+  async create(data: any) {
+    const {
+      nombre, 
+      direccion, 
+      ciudad 
+    } = data;
+
+    // Validación
+    if (!nombre || !direccion || !ciudad) {
+      throw new BadRequestException('Faltan campos obligatorios');
+    }
+
+    const nueva = this.ubicacionRepository.create(data);
     return this.ubicacionRepository.save(nueva);
   }
 
@@ -25,4 +35,5 @@ export class UbicacionService {
     if (!ubicacion) throw new NotFoundException(`Ubicacion #${id} no encontrada`);
     return this.ubicacionRepository.remove(ubicacion);
   }
+
 }

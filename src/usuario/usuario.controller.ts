@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, BadRequestException } from '@nestjs/common';
 import { UsuarioService } from './usuario.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
-import { CreateUsuarioDto } from './dto/create-usuario.dto';
-import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { rol } from './entity/usuario.entity';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('usuario')
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
@@ -15,22 +16,25 @@ export class UsuarioController {
   }
 
   @Get(':id')
-  getUsuario(@Param('id', ParseIntPipe) id: number) {
-    return this.usuarioService.findOne(id);
+  getUsuario(@Param('id') id: string) {
+    return this.usuarioService.findOne(Number(id));
   }
 
+  @Roles(rol.ADMIN)
   @Post()
-  create(@Body() dto: CreateUsuarioDto) {
-    return this.usuarioService.create(dto);
+  create(@Body() body: any) {
+    return this.usuarioService.create(body);
   }
 
+  @Roles(rol.ADMIN)
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUsuarioDto) {
-    return this.usuarioService.update(id, dto);
+  update(@Param('id') id: string, @Body() body: any) {
+    return this.usuarioService.update(Number(id), body);
   }
 
+  @Roles(rol.ADMIN)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.usuarioService.remove(id);
+  remove(@Param('id') id: string) {
+    return this.usuarioService.remove(Number(id));
   }
 }
