@@ -3,8 +3,9 @@ import { HorarioService } from './horario.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { rol } from 'src/usuario/entity/usuario.entity';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('horario')
 export class HorarioController {
   constructor(private readonly horarioService: HorarioService) {}

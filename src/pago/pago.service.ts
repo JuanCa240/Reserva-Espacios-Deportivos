@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Pago, estadoPago } from './entity/pago.entity';
 import { Repository } from 'typeorm';
@@ -84,5 +84,11 @@ export class PagoService {
 
   async findAll() {
     return this.pagoRepository.find();
+  }
+
+  async remove(id: number) {
+      const horario = await this.pagoRepository.findOneBy({ id });
+      if (!horario) throw new NotFoundException(`Pago #${id} no encontrado`);
+      return this.pagoRepository.remove(horario);
   }
 }

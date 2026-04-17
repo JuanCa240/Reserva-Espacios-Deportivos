@@ -46,7 +46,7 @@ export class UsuarioService {
   async create(data: any) {
     const { nombre, email, contrasena, telefono, rol: rolUsuario } = data;
 
-    // Validaciones
+    // Validar campos
     if (!nombre || !email || !contrasena || !telefono) {
       throw new BadRequestException('Faltan campos obligatorios');
     }
@@ -72,21 +72,52 @@ export class UsuarioService {
   }
 
   async update(id: number, data: any) {
+    // Buscar usuario por ID
     const usuario = await this.usuarioRepository.findOneBy({ id });
     if (!usuario) throw new NotFoundException('Usuario no encontrado');
-    
-    if (data.nombre) usuario.nombre = data.nombre;
-    if (data.email) usuario.email = data.email;
-    if (data.telefono) usuario.telefono = data.telefono;
 
-    if (data.rol) {
+    // Validar nombre
+    if (data.nombre !== undefined) {
+      if (data.nombre.trim() === '') {
+        throw new BadRequestException('Nombre inválido');
+      }
+      usuario.nombre = data.nombre;
+    }
+
+    // Validar email
+    if (data.email !== undefined) {
+      if (!data.email.includes('@')) {
+        throw new BadRequestException('Email inválido');
+      }
+
+      // Verifica que no exista otro usuario con ese email
+      const existe = await this.usuarioRepository.findOne({
+        where: { email: data.email },
+      });
+
+      // Evita duplicados (excepto el mismo usuario)
+      if (existe && existe.id !== id) {
+        throw new ConflictException('El email ya está en uso');
+      }
+
+      usuario.email = data.email;
+    }
+
+    // Actualizar teléfono
+    if (data.telefono !== undefined) {
+      usuario.telefono = data.telefono;
+    }
+
+    // validar rol
+    if (data.rol !== undefined) {
       if (!Object.values(rol).includes(data.rol)) {
         throw new BadRequestException('Rol inválido');
       }
       usuario.rol = data.rol;
     }
 
-    if (data.contrasena) {
+    // Validar y encriptar contraseña
+    if (data.contrasena !== undefined) {
       usuario.contrasena = await bcrypt.hash(data.contrasena, 10);
     }
 

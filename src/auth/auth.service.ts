@@ -66,13 +66,20 @@ export class AuthService {
       throw new BadRequestException('No puedes asignar roles');
     }
 
-      // Validar campos
+    // validar campos obligatorios
     if (!nombre || !email || !contrasena)
       throw new BadRequestException('Faltan campos obligatorios');
 
+    // validar formato básico de email
+    if (!email.includes('@')) {
+      throw new BadRequestException('Email inválido');
+    }
+
+    // Verificar si el usuario ya existe
     const existe = await this.usuarioRepository.findOne({ where: { email } });
     if (existe) throw new BadRequestException('El usuario ya existe');
 
+    // Encriptar contraseña
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
     const nuevoUsuario = this.usuarioRepository.create({
@@ -84,6 +91,7 @@ export class AuthService {
 
     await this.usuarioRepository.save(nuevoUsuario);
 
+    // Generar token automaticamente
     const payload = { 
       sub: nuevoUsuario.id, 
       email: nuevoUsuario.email, 

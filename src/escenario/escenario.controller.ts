@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
@@ -21,6 +21,17 @@ export class EscenarioController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.escenarioService.remove(Number(id));
+  }
+
+  @Roles(rol.ADMIN)
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() body: any,) {
+    return this.escenarioService.update(Number(id), body);
+  }
+
+  @Get(':id')
+    findById(@Param('id') id: number) {
+      return this.escenarioService.findOne(Number(id));
   }
 
   @Get()

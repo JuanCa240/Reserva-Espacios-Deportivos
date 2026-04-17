@@ -22,8 +22,8 @@ export class ReservaController {
   }
 
   @Get(':id')
-  getReserva(@Param('id', ParseIntPipe) id: number) {
-    return this.reservaService.findOne(id);
+  getReserva(@Param('id') id: number) {
+    return this.reservaService.findOne(Number(id));
   }
 
   @Roles(rol.ADMIN)
